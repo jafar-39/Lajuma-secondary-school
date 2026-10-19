@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Login | Lajuma Secondary School</title>
+
   <style>
     * {
       box-sizing: border-box;
@@ -97,6 +99,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <header>
@@ -108,13 +111,16 @@
     <h2>Portal Login</h2>
 
     <form id="loginForm">
+
       <label for="accountType">Login as</label>
+
       <select id="accountType" required>
         <option value="student">Student</option>
         <option value="staff">School Staff</option>
       </select>
 
       <label for="email">Email Address</label>
+
       <input
         type="email"
         id="email"
@@ -124,6 +130,7 @@
       >
 
       <label for="password">Password</label>
+
       <input
         type="password"
         id="password"
@@ -132,9 +139,12 @@
         required
       >
 
-      <button type="submit">Log In</button>
+      <button type="submit" id="loginButton">
+        Log In
+      </button>
 
       <p id="message" role="status" aria-live="polite"></p>
+
     </form>
 
     <p class="note">
@@ -150,48 +160,83 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<script>
-  document.getElementById("year").textContent =
-    new Date().getFullYear();
+  <script>
+    document.getElementById("year").textContent =
+      new Date().getFullYear();
 
-  const SUPABASE_URL =
-    "https://hhjfukdarhrmxdurqzeo.supabase.co";
+    const SUPABASE_URL =
+      "https://hhjfukdarhrmxdurqzeo.supabase.co";
 
-  const SUPABASE_PUBLISHABLE_KEY =
-    "sb_publishable_xGel2wLMMQqG8kJTIl-wTA_YZfoBOws";
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_xGel2wLMMQqG8kJTIl-wTA_YZfoBOws";
 
-  const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
-  );
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
 
-  const loginForm = document.getElementById("loginForm");
-  const message = document.getElementById("message");
+    const loginForm =
+      document.getElementById("loginForm");
 
-  loginForm.addEventListener("submit", async function(event) {
-    event.preventDefault();
+    const message =
+      document.getElementById("message");
 
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
+    const loginButton =
+      document.getElementById("loginButton");
 
-    message.textContent = "Signing in...";
+    loginForm.addEventListener("submit", async function(event) {
+      event.preventDefault();
 
-    const { data, error } =
-      await supabaseClient.auth.signInWithPassword({
-        email: email,
-        password: password
-      });
+      const email =
+        document.getElementById("email").value.trim();
 
-    if (error) {
-      message.textContent =
-        "Login failed. Check your email and password.";
-      return;
-    }
+      const password =
+        document.getElementById("password").value;
 
-    message.textContent =
-      "Login successful! Your account has been authenticated.";
-  });
-</script>
+      const accountType =
+        document.getElementById("accountType").value;
+
+      message.textContent = "Signing in...";
+      loginButton.disabled = true;
+
+      try {
+        const { data, error } =
+          await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+          });
+
+        if (error) {
+          message.textContent =
+            "Login failed. Check your email and password.";
+          return;
+        }
+
+        if (!data.user) {
+          message.textContent =
+            "Login failed. No authenticated user was returned.";
+          return;
+        }
+
+        message.textContent =
+          "Login successful! Opening your portal...";
+
+        if (accountType === "student") {
+          window.location.replace("results.html");
+        } else {
+          window.location.replace("admin.html");
+        }
+
+      } catch (error) {
+        console.error("Login error:", error);
+
+        message.textContent =
+          "Something went wrong. Please try again.";
+      } finally {
+        loginButton.disabled = false;
+      }
+    });
+  </script>
 
 </body>
 </html>
