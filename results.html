@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Results | Lajuma Secondary School</title>
+
+  <meta name="description" content="Student results portal for Lajuma Secondary School, Daura.">
+
+  <style>
+    :root {
+      --primary: #123c2b;
+      --secondary: #1e6847;
+      --background: #f4f7f5;
+      --white: #ffffff;
+      --text: #202820;
+      --muted: #68736c;
+      --border: #dce5df;
+      --danger: #b42318;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--background);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    header {
+      background: var(--primary);
+      color: var(--white);
+      padding: 18px 16px;
+    }
+
+    .header-content {
+      max-width: 1100px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .school-logo {
+      width: 65px;
+      height: 65px;
+      object-fit: contain;
+      background: white;
+      border-radius: 8px;
+      padding: 4px;
+    }
+
+    .school-title h1 {
+      font-size: 21px;
+      margin: 0;
+    }
+
+    .school-title p {
+      margin: 3px 0 0;
+      font-size: 13px;
+    }
+
+    nav {
+      background: var(--secondary);
+      padding: 10px 16px;
+    }
+
+    .nav-content {
+      max-width: 1100px;
+      margin: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      padding: 11px 16px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .logout-button {
+      background: white;
+      color: var(--primary);
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 28px auto;
+      padding: 0 16px;
+    }
+
+    .welcome-card,
+    .panel {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    h2 {
+      color: var(--primary);
+      margin-top: 0;
+    }
+
+    .student-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+    }
+
+    .detail-box {
+      background: var(--background);
+      border-radius: 7px;
+      padding: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .detail-label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .detail-value {
+      font-weight: bold;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    select {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: white;
+      font-size: 15px;
+    }
+
+    .primary-button {
+      background: var(--primary);
+      color: white;
+    }
+
+    .message {
+      padding: 12px;
+      border-radius: 6px;
+      margin: 12px 0;
+      overflow-wrap: anywhere;
+    }
+
+    .info {
+      background: #eaf2ed;
+      color: var(--primary);
+    }
+
+    .error {
+      background: #fff0ef;
+      color: var(--danger);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+        .results-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 14px;
+      margin: 20px 0;
+    }
+
+    .summary-box {
+      background: #eaf2ed;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .summary-box span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .summary-box strong {
+      display: block;
+      color: var(--primary);
+      font-size: 24px;
+      margin-top: 5px;
+    }
+
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      background: white;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--border);
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background: var(--primary);
+      color: white;
+      white-space: nowrap;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f7faf8;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 24px 12px;
+      color: var(--muted);
+    }
+
+    .result-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    footer {
+      background: var(--primary);
+      color: white;
+      text-align: center;
+      padding: 20px 14px;
+      margin-top: 35px;
+    }
+
+    footer p {
+      margin: 5px 0;
+      font-size: 13px;
+    }
+
+    @media (max-width: 520px) {
+      .school-title h1 {
+        font-size: 17px;
+      }
+
+      .school-logo {
+        width: 52px;
+        height: 52px;
+      }
+
+      .welcome-card,
+      .panel {
+        padding: 15px;
+      }
+
+      th,
+      td {
+        padding: 9px;
+        font-size: 13px;
+      }
+    }
+
+    @media print {
+      nav,
+      .filters,
+      .result-actions,
+      footer,
+      #statusMessage {
+        display: none !important;
+      }
+
+      body {
+        background: white;
+      }
+
+      main {
+        margin: 0;
+        max-width: none;
+      }
+
+      .welcome-card,
+      .panel {
+        box-shadow: none;
+        border: 1px solid #ccc;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="header-content">
+      <img
+        src="school-logo.png"
+        alt="Lajuma Secondary School logo"
+        class="school-logo"
+      >
+
+      <div class="school-title">
+        <h1>Lajuma Secondary School</h1>
+        <p>Daura, Katsina State, Nigeria</p>
+        <p><em>Discipline and hard work</em></p>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <div class="nav-content">
+      <a href="index.html">Home</a>
+      <button type="button" id="logoutButton" class="logout-button">
+        Log Out
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <section class="welcome-card">
+      <h2>Student Results Portal</h2>
+      <p>
+        Welcome to the official student results portal. Sign in using your
+        student account to view results that the school has published.
+      </p>
+      <div id="statusMessage" class="message info" role="status" aria-live="polite">
+        Checking your login...
+      </div>
+    </section>
+
+    <section id="studentSection" class="panel hidden">
+      <h2>Student Information</h2>
+
+      <div class="student-details">
+        <div class="detail-box">
+          <span class="detail-label">Full Name</span>
+          <span id="studentName" class="detail-value">—</span>
+        </div>
+
+        <div class="detail-box">
+          <span class="detail-label">Admission Number</span>
+          <span id="admissionNumber" class="detail-value">—</span>
+        </div>
+
+        <div class="detail-box">
+          <span class="detail-label">Class</span>
+          <span id="studentClass" class="detail-value">—</span>
+        </div>
+
+        <div class="detail-box">
+          <span class="detail-label">Email</span>
+          <span id="studentEmail" class="detail-value">—</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="resultsSection" class="panel hidden">
+      <h2>Check Your Results</h2>
+
+      <div class="filters">
+        <div>
+          <label for="sessionSelect">Academic Session</label>
+          <select id="sessionSelect">
+            <option value="">Loading sessions...</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="termSelect">Term</label>
+          <select id="termSelect">
+            <option value="First Term">First Term</option>
+            <option value="Second Term">Second Term</option>
+            <option value="Third Term">Third Term</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="button" id="checkResultsButton" class="primary-button">
+        Check Results
+      </button>
+
+      <div id="resultsMessage" class="message info" role="status" aria-live="polite">
+        Select your academic session and term.
+      </div>
+
+      <div id="resultsContent" class="hidden">
+        <div class="results-summary">
+          <div class="summary-box">
+            <span>Subjects</span>
+            <strong id="subjectCount">0</strong>
+          </div>
+
+          <div class="summary-box">
+            <span>Total Score</span>
+            <strong id="totalScore">0</strong>
+          </div>
+
+          <div class="summary-box">
+            <span>Average</span>
+            <strong id="averageScore">0%</strong>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Test</th>
+                <th>Exam</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+
+            <tbody id="resultsTableBody">
+              <tr>
+                <td colspan="4" class="empty-state">
+                  No results loaded.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="result-actions">
+          <button type="button" id="printButton" class="primary-button">
+            Print Results
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; <span id="currentYear"></span> Lajuma Secondary School.</p>
+    <p>Discipline and hard work.</p>
+    <p>Website developed by Jafar Muhammad Lawal.</p>
+  </footer>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    "use strict";
+
+    // Lajuma Secondary School Supabase configuration
+    const SUPABASE_URL = "https://hhjfukdarhrmxdurqzeo.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_xGel2wLMMQqG8kJTIl-wTA_YZfoBOws";
+
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+
+    let currentStudent = null;
+
+    const statusMessage = document.getElementById("statusMessage");
+    const studentSection = document.getElementById("studentSection");
+    const resultsSection = document.getElementById("resultsSection");
+    const resultsMessage = document.getElementById("resultsMessage");
+    const resultsContent = document.getElementById("resultsContent");
+
+    document.getElementById("currentYear").textContent =
+      new Date().getFullYear();
+
+    function showMessage(element, message, isError = false) {
+      element.textContent = message;
+      element.className = "message " + (isError ? "error" : "info");
+    }
+
+    function safeText(value) {
+      return value === null || value === undefined || value === ""
+        ? "—"
+        : String(value);
+    }
+
+    function safeNumber(value) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : 0;
+    }
+
+    function hideStudentContent() {
+      studentSection.classList.add("hidden");
+      resultsSection.classList.add("hidden");
+      resultsContent.classList.add("hidden");
+      currentStudent = null;
+    }
+
+    async function loadStudentAccount() {
+      hideStudentContent();
+
+      showMessage(statusMessage, "Checking your login...");
+
+      try {
+        const {
+          data: { user },
+          error: userError
+        } = await supabaseClient.auth.getUser();
+
+        if (userError || !user) {
+          showMessage(
+            statusMessage,
+            "Please log in with your student account before viewing results.",
+            true
+          );
+
+          window.setTimeout(() => {
+            window.location.href = "login.html";
+          }, 1800);
+
+          return;
+        }
+
+        const { data: student, error: studentError } =
+          await supabaseClient
+            .from("students")
+            .select("id, admission_number, full_name, class_name, email, auth_user_id")
+            .eq("auth_user_id", user.id)
+            .maybeSingle();
+
+        if (studentError) {
+          console.error("Student lookup error:", studentError);
+
+          showMessage(
+            statusMessage,
+            "We could not load your student record. Please contact the school administrator.",
+            true
+          );
+
+          return;
+        }
+
+        if (!student) {
+          showMessage(
+            statusMessage,
+            "Your login is valid, but no student record is linked to this account. Please contact the school administrator.",
+            true
+          );
+
+          return;
+        }
+
+        currentStudent = student;
+
+        document.getElementById("studentName").textContent =
+          safeText(student.full_name);
+
+        document.getElementById("admissionNumber").textContent =
+          safeText(student.admission_number);
+
+        document.getElementById("studentClass").textContent =
+          safeText(student.class_name);
+
+        document.getElementById("studentEmail").textContent =
+          safeText(student.email || user.email);
+
+        studentSection.classList.remove("hidden");
+        resultsSection.classList.remove("hidden");
+
+        showMessage(
+          statusMessage,
+          "You are signed in. Select your academic session and term to check published results."
+        );
+
+        await loadAcademicSessions();
+      } catch (error) {
+        console.error("Unexpected login error:", error);
+
+        showMessage(
+          statusMessage,
+          "A connection error occurred while loading your account. Please try again.",
+          true
+        );
+      }
+    }
+
+    async function loadAcademicSessions() {
+      const sessionSelect = document.getElementById("sessionSelect");
+
+      sessionSelect.replaceChildren();
+
+      const loadingOption = document.createElement("option");
+      loadingOption.value = "";
+      loadingOption.textContent = "Loading sessions...";
+      sessionSelect.appendChild(loadingOption);
+
+      try {
+        const { data, error } = await supabaseClient
+          .from("academic_sessions")
+          .select("id, session_name, is_current")
+          .order("session_name", { ascending: false });
+
+        if (error) {
+          console.error("Academic session error:", error);
+
+          sessionSelect.replaceChildren();
+
+          const errorOption = document.createElement("option");
+          errorOption.value = "";
+          errorOption.textContent = "Unable to load sessions";
+          sessionSelect.appendChild(errorOption);
+
+          showMessage(
+            resultsMessage,
+            "Academic sessions could not be loaded. Check the database permissions.",
+            true
+          );
+
+          return;
+        }
+
+        sessionSelect.replaceChildren();
+
+        if (!data || data.length === 0) {
+          const emptyOption = document.createElement("option");
+          emptyOption.value = "";
+          emptyOption.textContent = "No academic sessions available";
+          sessionSelect.appendChild(emptyOption);
+
+          showMessage(
+            resultsMessage,
+            "The school has not added an academic session yet."
+          );
+
+          return;
+        }
+
+        let selectedSessionId = "";
+
+        data.forEach((session) => {
+          const option = document.createElement("option");
+          option.value = session.id;
+          option.textContent = safeText(session.session_name);
+
+          if (session.is_current) {
+            option.selected = true;
+            selectedSessionId = String(session.id);
+          }
+
+          sessionSelect.appendChild(option);
+        });
+
+        if (selectedSessionId) {
+          sessionSelect.value = selectedSessionId;
+        }
+
+        showMessage(
+          resultsMessage,
+          "Choose a session and term, then tap Check Results."
+        );
+      } catch (error) {
+        console.error("Session loading error:", error);
+
+        showMessage(
+          resultsMessage,
+          "A connection error occurred while loading academic sessions.",
+          true
+        );
+      }
+    }
+  </script>
+    <script>
+    // Load published results for the signed-in student.
+    async function loadStudentResults() {
+      if (!currentStudent) {
+        showMessage(
+          resultsMessage,
+          "Your student account has not been loaded. Please log in again.",
+          true
+        );
+        return;
+      }
+
+      const sessionId =
+        document.getElementById("sessionSelect").value;
+
+      const term =
+        document.getElementById("termSelect").value;
+
+      if (!sessionId) {
+        showMessage(
+          resultsMessage,
+          "Please select an academic session.",
+          true
+        );
+        return;
+      }
+
+      resultsContent.classList.add("hidden");
+
+      showMessage(
+        resultsMessage,
+        "Loading your published results..."
+      );
+
+      const checkButton =
+        document.getElementById("checkResultsButton");
+
+      checkButton.disabled = true;
+      checkButton.textContent = "Loading...";
+
+      try {
+        // Only request published results belonging to this student.
+        // Database Row Level Security must enforce this restriction too.
+        const { data: results, error: resultsError } =
+          await supabaseClient
+            .from("results")
+            .select(
+              "id, student_id, subject_id, session_id, term, test_score, exam_score, published"
+            )
+            .eq("student_id", currentStudent.id)
+            .eq("session_id", sessionId)
+            .eq("term", term)
+            .eq("published", true);
+
+        if (resultsError) {
+          console.error("Results loading error:", resultsError);
+
+          showMessage(
+            resultsMessage,
+            "Results could not be loaded. Please contact the school administrator.",
+            true
+          );
+
+          return;
+        }
+
+        if (!results || results.length === 0) {
+          document.getElementById("resultsTableBody").replaceChildren();
+
+          document.getElementById("subjectCount").textContent = "0";
+          document.getElementById("totalScore").textContent = "0";
+          document.getElementById("averageScore").textContent = "0%";
+
+          showMessage(
+            resultsMessage,
+            "No published results were found for this session and term."
+          );
+
+          return;
+        }
+
+        // Load the subject names for the returned results.
+        const subjectIds = [
+          ...new Set(results.map((result) => result.subject_id))
+        ];
+
+        const { data: subjects, error: subjectsError } =
+          await supabaseClient
+            .from("subjects")
+            .select("id, subject_name")
+            .in("id", subjectIds);
+
+        if (subjectsError) {
+          console.error("Subjects loading error:", subjectsError);
+
+          showMessage(
+            resultsMessage,
+            "Subject names could not be loaded. Please contact the school administrator.",
+            true
+          );
+
+          return;
+        }
+
+        const subjectMap = new Map(
+          (subjects || []).map((subject) => [
+            String(subject.id),
+            subject.subject_name
+          ])
+        );
+
+        const tableBody =
+          document.getElementById("resultsTableBody");
+
+        tableBody.replaceChildren();
+
+        let totalScore = 0;
+
+        results.forEach((result) => {
+          const testScore = safeNumber(result.test_score);
+          const examScore = safeNumber(result.exam_score);
+          const subjectTotal = testScore + examScore;
+
+          totalScore += subjectTotal;
+
+          const row = document.createElement("tr");
+
+          const subjectCell = document.createElement("td");
+          subjectCell.textContent =
+            subjectMap.get(String(result.subject_id)) ||
+            "Unknown subject";
+
+          const testCell = document.createElement("td");
+          testCell.textContent = String(testScore);
+
+          const examCell = document.createElement("td");
+          examCell.textContent = String(examScore);
+
+          const totalCell = document.createElement("td");
+          totalCell.textContent = String(subjectTotal);
+
+          row.append(
+            subjectCell,
+            testCell,
+            examCell,
+            totalCell
+          );
+
+          tableBody.appendChild(row);
+        });
+
+        const averageScore = totalScore / results.length;
+
+        document.getElementById("subjectCount").textContent =
+          String(results.length);
+
+        document.getElementById("totalScore").textContent =
+          totalScore.toFixed(2);
+
+        document.getElementById("averageScore").textContent =
+          averageScore.toFixed(2) + "%";
+
+        resultsContent.classList.remove("hidden");
+
+        showMessage(
+          resultsMessage,
+          "Published results loaded. If any score looks incorrect, contact the school administrator."
+        );
+
+      } catch (error) {
+        console.error("Unexpected results error:", error);
+
+        showMessage(
+          resultsMessage,
+          "A connection error occurred. Please try again.",
+          true
+        );
+
+      } finally {
+        checkButton.disabled = false;
+        checkButton.textContent = "Check Results";
+      }
+    }
+
+    // Check Results button.
+    document
+      .getElementById("checkResultsButton")
+      .addEventListener("click", loadStudentResults);
+
+    // Print the displayed results.
+    document
+      .getElementById("printButton")
+      .addEventListener("click", function () {
+        window.print();
+      });
+
+    // Log out of the student account.
+    document
+      .getElementById("logoutButton")
+      .addEventListener("click", async function () {
+        const logoutButton = this;
+
+        logoutButton.disabled = true;
+        logoutButton.textContent = "Logging out...";
+
+        try {
+          const { error } = await supabaseClient.auth.signOut();
+
+          if (error) {
+            console.error("Logout error:", error);
+
+            showMessage(
+              statusMessage,
+              "Logout failed. Please try again.",
+              true
+            );
+
+            logoutButton.disabled = false;
+            logoutButton.textContent = "Log Out";
+            return;
+          }
+
+          window.location.href = "login.html";
+
+        } catch (error) {
+          console.error("Unexpected logout error:", error);
+
+          showMessage(
+            statusMessage,
+            "A connection error occurred during logout.",
+            true
+          );
+
+          logoutButton.disabled = false;
+          logoutButton.textContent = "Log Out";
+        }
+      });
+
+    // Start by checking the student's login.
+    loadStudentAccount();
+  </script>
+</body>
+</html>

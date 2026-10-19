@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Secure administration portal for Lajuma Secondary School, Daura.">
+<title>Admin Dashboard | Lajuma Secondary School</title>
+<style>
+:root {
+  --primary:#123b27;
+  --primary-light:#1c5b3b;
+  --accent:#e7b52c;
+  --background:#f3f6f4;
+  --white:#fff;
+  --text:#202923;
+  --muted:#66736b;
+  --border:#dce5de;
+  --danger:#b42318;
+  --success:#167647;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--background);color:var(--text);line-height:1.5}
+button,input,select{font:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.6;cursor:not-allowed}
+.topbar{background:var(--primary);color:white;padding:18px 20px;border-bottom:4px solid var(--accent)}
+.topbar-inner,.container{max-width:1150px;margin:auto}
+.school-title{margin:0;font-size:22px}
+.school-subtitle{margin:5px 0 0;font-size:13px}
+.container{margin:25px auto;padding:0 15px 35px}
+.card{background:white;padding:22px;border:1px solid var(--border);border-radius:12px;box-shadow:0 3px 12px rgba(0,0,0,.04);margin-bottom:20px}
+.card h2{margin-top:0;color:var(--primary)}
+.login-card{max-width:480px;margin:45px auto}
+label{display:block;margin:14px 0 6px;font-weight:bold;font-size:14px}
+input,select{width:100%;min-height:45px;padding:11px 12px;border:1px solid #cbd5ce;border-radius:7px;background:white;color:var(--text)}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:2px}
+.btn{display:inline-block;border:0;border-radius:7px;padding:11px 15px;font-weight:bold;text-align:center}
+.btn-primary{background:var(--primary);color:white}
+.btn-primary:hover{background:var(--primary-light)}
+.btn-secondary{background:#e8eee9;color:var(--primary)}
+.btn-success{background:#e0f4e7;color:var(--success)}
+.btn-danger{background:#fde8e7;color:var(--danger)}
+.btn-block{width:100%;margin-top:18px}
+.message{margin-top:14px;padding:11px;border-radius:7px;overflow-wrap:anywhere}
+.message:empty{display:none}
+.message.error{color:var(--danger);background:#fff0ef;border:1px solid #f2c4c0}
+.message.success{color:var(--success);background:#eaf8ef;border:1px solid #b8e5c6}
+.message.info{color:#244f77;background:#eef6ff;border:1px solid #c8def8}
+.muted,.section-description{color:var(--muted);font-size:14px}
+.dashboard-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.table-wrap{width:100%;overflow-x:auto;margin-top:15px}
+table{width:100%;min-width:650px;border-collapse:collapse}
+th,td{padding:12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--border);font-size:14px;overflow-wrap:anywhere}
+th{background:#f1f6f2;color:var(--primary)}
+.status{display:inline-block;padding:4px 9px;border-radius:20px;font-size:12px;font-weight:bold;text-transform:capitalize}
+.status-pending{color:#8a5a00;background:#fff3cd}
+.status-approved{color:var(--success);background:#dff5e6}
+.status-rejected{color:var(--danger);background:#fde8e7}
+.status-published{color:var(--success);background:#dff5e6}
+.status-unpublished{color:#8a5a00;background:#fff3cd}
+.actions{display:flex;gap:7px;flex-wrap:wrap}
+.actions .btn{padding:8px 10px;font-size:12px}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
+.full-width{grid-column:1/-1}
+.hidden{display:none!important}
+.footer{text-align:center;color:var(--muted);padding:20px 12px;font-size:13px}
+.small-note{font-size:13px;color:var(--muted)}
+@media(max-width:650px){
+ .school-title{font-size:19px}
+ .card{padding:16px}
+ .form-grid{grid-template-columns:1fr}
+ .full-width{grid-column:auto}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <h1 class="school-title">Lajuma Secondary School</h1>
+    <p class="school-subtitle">Daura, Katsina State, Nigeria — Administration Portal</p>
+  </div>
+</header>
+<main class="container">
+<section id="loginSection" class="card login-card">
+  <h2>Administrator Login</h2>
+  <p class="muted">This area is for authorized school administrators only.</p>
+  <form id="loginForm">
+    <label for="adminEmail">Administrator Email</label>
+    <input type="email" id="adminEmail" value="lajumass@yahoo.com" autocomplete="username" required>
+    <label for="adminPassword">Password</label>
+    <input type="password" id="adminPassword" autocomplete="current-password" required>
+    <button type="submit" id="loginButton" class="btn btn-primary btn-block">Sign In</button>
+  </form>
+  <div id="loginMessage" class="message" role="status" aria-live="polite"></div>
+</section>
+<section id="dashboardSection" class="hidden">
+<section class="card">
+  <div class="dashboard-header">
+    <div>
+      <h2>Administration Dashboard</h2>
+      <p class="muted">Signed in as <strong id="signedInEmail"></strong></p>
+    </div>
+    <button type="button" id="logoutButton" class="btn btn-secondary">Log Out</button>
+  </div>
+  <div id="dashboardMessage" class="message" role="status" aria-live="polite"></div>
+</section>
+<section class="card">
+  <h2>Admission Applications</h2>
+  <p class="section-description">Review applications and approve or reject them.</p>
+  <button type="button" id="refreshAdmissionsButton" class="btn btn-secondary">Refresh Applications</button>
+  <div id="admissionsMessage" class="message" role="status" aria-live="polite"></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Applicant</th><th>Contact</th><th>Class</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="admissionsTableBody"><tr><td colspan="5">Applications have not been loaded yet.</td></tr></tbody>
+    </table>
+  </div>
+</section>
+<section class="card">
+  <h2>Register a Student</h2>
+  <p class="section-description">Add a student to the school's student records.</p>
+  <form id="studentForm">
+    <div class="form-grid">
+      <div>
+        <label for="studentAdmissionNumber">Admission Number</label>
+        <input type="text" id="studentAdmissionNumber" maxlength="50" required>
+      </div>
+      <div>
+        <label for="studentFullName">Full Name</label>
+        <input type="text" id="studentFullName" maxlength="150" required>
+      </div>
+      <div>
+        <label for="studentClass">Class</label>
+        <select id="studentClass" required>
+          <option value="">Select class</option>
+          <option>JSS 1</option><option>JSS 2</option><option>JSS 3</option>
+          <option>SSS 1</option><option>SSS 2</option><option>SSS 3</option>
+        </select>
+      </div>
+      <div>
+        <label for="studentEmail">Student Email (optional)</label>
+        <input type="email" id="studentEmail" maxlength="254">
+      </div>
+      <div class="full-width">
+        <button type="submit" id="saveStudentButton" class="btn btn-primary">Register Student</button>
+      </div>
+    </div>
+  </form>
+  <div id="studentMessage" class="message" role="status" aria-live="polite"></div>
+</section>
+<section class="card">
+  <h2>Student Records</h2>
+  <button type="button" id="refreshStudentsButton" class="btn btn-secondary">Refresh Student Records</button>
+  <div id="studentsMessage" class="message" role="status" aria-live="polite"></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Admission Number</th><th>Full Name</th><th>Class</th><th>Email</th></tr></thead>
+      <tbody id="studentsTableBody"><tr><td colspan="4">Student records have not been loaded yet.</td></tr></tbody>
+    </table>
+  </div>
+</section>
+<section class="card" id="resultManagement">
+  <h2>Manage Student Results</h2>
+  <p class="section-description">
+    Select a student, subject, academic session and term. Results remain unpublished until approved.
+  </p>
+  <form id="resultForm">
+    <input type="hidden" id="resultId">
+    <div class="form-grid">
+      <div>
+        <label for="resultStudent">Student</label>
+        <select id="resultStudent" required><option value="">Load students first</option></select>
+      </div>
+      <div>
+        <label for="resultSubject">Subject</label>
+        <select id="resultSubject" required><option value="">Loading subjects...</option></select>
+      </div>
+      <div>
+        <label for="resultSession">Academic Session</label>
+        <select id="resultSession" required><option value="">Loading sessions...</option></select>
+      </div>
+      <div>
+        <label for="resultTerm">Term</label>
+        <select id="resultTerm" required>
+          <option value="">Select term</option>
+          <option value="First Term">First Term</option>
+          <option value="Second Term">Second Term</option>
+          <option value="Third Term">Third Term</option>
+        </select>
+      </div>
+      <div>
+        <label for="testScore">Test Score (0–100)</label>
+        <input type="number" id="testScore" min="0" max="100" step="0.01" value="0" required>
+      </div>
+      <div>
+        <label for="examScore">Examination Score (0–100)</label>
+        <input type="number" id="examScore" min="0" max="100" step="0.01" value="0" required>
+      </div>
+      <div class="full-width">
+        <button type="submit" id="saveResultButton" class="btn btn-primary">Save Unpublished Result</button>
+        <button type="button" id="cancelResultEditButton" class="btn btn-secondary hidden">Cancel Editing</button>
+      </div>
+    </div>
+  </form>
+  <p class="small-note">Confirm the school's official scoring policy before entering real student marks.</p>
+  <div id="resultFormMessage" class="message" role="status" aria-live="polite"></div>
+</section>
+
+<section class="card">
+  <div class="dashboard-header">
+    <div>
+      <h2>Recorded Results</h2>
+      <p class="section-description">Review saved results and publish or unpublish them.</p>
+    </div>
+    <button type="button" id="refreshResultsButton" class="btn btn-secondary">Refresh Results</button>
+  </div>
+  <div id="resultsMessage" class="message" role="status" aria-live="polite"></div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Student</th><th>Subject</th><th>Session</th><th>Term</th>
+          <th>Test</th><th>Exam</th><th>Total</th><th>Status</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="resultsTableBody"><tr><td colspan="9">Results have not been loaded yet.</td></tr></tbody>
+    </table>
+  </div>
+</section>
+</section>
+</main>
+
+<footer class="footer">
+  Lajuma Secondary School, Daura<br>
+  Website developed by Jafar Muhammad Lawal.
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+"use strict";
+
+const SUPABASE_URL = "https://hhjfukdarhrmxdurqzeo.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_xGel2wLMMQqG8kJTIl-wTA_YZfoBOws";
+const SCHOOL_ADMIN_EMAIL = "lajumass@yahoo.com";
+
+const $ = id => document.getElementById(id);
+
+function showMessage(id, message, type = "info") {
+  const el = $(id);
+  el.textContent = message;
+  el.className = "message " + type;
+}
+function clearMessage(id) {
+  $(id).textContent = "";
+  $(id).className = "message";
+}
+function loadingButton(id, loading, busyText, normalText) {
+  $(id).disabled = loading;
+  $(id).textContent = loading ? busyText : normalText;
+}
+function cell(value) {
+  const td = document.createElement("td");
+  td.textContent = value === null || value === undefined || value === "" ? "—" : String(value);
+  return td;
+}
+function badge(status) {
+  const span = document.createElement("span");
+  const s = String(status || "pending").toLowerCase();
+  span.className = "status status-" + s;
+  span.textContent = s;
+  return span;
+}
+function explainError(error) {
+  const msg = error?.message || String(error || "Unknown error.");
+  const lower = msg.toLowerCase();
+  if (lower.includes("failed to fetch") || lower.includes("network"))
+    return "Network error. Check your internet connection and try again.";
+  if (lower.includes("row-level security") || msg.includes("42501"))
+    return "Database permission denied. Check administrator registration and RLS policies.";
+  if (lower.includes("invalid login credentials"))
+    return "The email or password is incorrect.";
+  if (lower.includes("duplicate key"))
+    return "A record with the same unique value already exists.";
+  if (lower.includes("is_school_admin") || lower.includes("function"))
+    return "Administrator verification failed. Check public.is_school_admin() in Supabase.";
+  if (msg.includes("PGRST205") || lower.includes("schema cache"))
+    return "A database table or column could not be found. Check its exact name in Supabase.";
+  return msg;
+}
+
+if (!window.supabase?.createClient) {
+  document.body.innerHTML = "<main style='padding:25px;font-family:Arial'><h1>Admin portal could not load</h1><p>Supabase library failed to load. Check your internet connection and reload.</p></main>";
+  throw new Error("Supabase library failed to load.");
+}
+
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+});
+
+async function verifyAdministrator() {
+  const { data, error } = await db.auth.getUser();
+  if (error || !data?.user)
+    return { allowed:false, message:"Please sign in with your administrator account." };
+
+  if (String(data.user.email || "").toLowerCase() !== SCHOOL_ADMIN_EMAIL.toLowerCase())
+    return { allowed:false, message:"This account is not the designated school administrator." };
+
+  const { data:isAdmin, error:adminError } = await db.rpc("is_school_admin");
+  if (adminError) return { allowed:false, message:explainError(adminError) };
+  if (isAdmin !== true)
+    return { allowed:false, message:"This account is not registered as a school administrator in Supabase." };
+
+  return { allowed:true, user:data.user };
+}
+
+$("loginForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  clearMessage("loginMessage");
+  loadingButton("loginButton", true, "Signing in...", "Sign In");
+  try {
+    const { error } = await db.auth.signInWithPassword({
+      email:$("adminEmail").value.trim(),
+      password:$("adminPassword").value
+    });
+    if (error) throw error;
+    await openDashboard();
+  } catch (error) {
+    showMessage("loginMessage", explainError(error), "error");
+  } finally {
+    loadingButton("loginButton", false, "Signing in...", "Sign In");
+  }
+});
+
+async function openDashboard() {
+  const verification = await verifyAdministrator();
+  if (!verification.allowed) {
+    $("dashboardSection").classList.add("hidden");
+    $("loginSection").classList.remove("hidden");
+    showMessage("loginMessage", verification.message, "error");
+    return false;
+  }
+
+  $("loginSection").classList.add("hidden");
+  $("dashboardSection").classList.remove("hidden");
+  $("signedInEmail").textContent = verification.user.email || "";
+  clearMessage("loginMessage");
+  showMessage("dashboardMessage", "Administrator verification successful.", "success");
+
+  await Promise.all([
+    loadAdmissions(),
+    loadStudents(),
+    loadSubjects(),
+    loadSessions(),
+    loadResults()
+  ]);
+  return true;
+}
+$("logoutButton").addEventListener("click", async () => {
+  $("logoutButton").disabled = true;
+  try {
+    const { error } = await db.auth.signOut();
+    if (error) throw error;
+    $("dashboardSection").classList.add("hidden");
+    $("loginSection").classList.remove("hidden");
+    $("adminPassword").value = "";
+    clearMessage("dashboardMessage");
+    clearMessage("loginMessage");
+  } catch (error) {
+    showMessage("dashboardMessage", explainError(error), "error");
+  } finally {
+    $("logoutButton").disabled = false;
+  }
+});
+
+async function loadAdmissions() {
+  clearMessage("admissionsMessage");
+  const tbody = $("admissionsTableBody");
+  tbody.replaceChildren();
+
+  try {
+    const v = await verifyAdministrator();
+    if (!v.allowed) throw new Error(v.message);
+
+    const { data, error } = await db.from("admission_applications")
+      .select("*").order("created_at", {ascending:false}).limit(100);
+    if (error) throw error;
+
+    if (!data?.length) {
+      const tr = document.createElement("tr");
+      const td = cell("No admission applications found.");
+      td.colSpan = 5;
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return;
+    }
+
+    data.forEach(app => {
+      const tr = document.createElement("tr");
+      const name = app.applicant_name || app.full_name || app.applicantName || app.name || "Not provided";
+      const email = app.email || app.applicant_email || app.applicantEmail || "";
+      const phone = app.phone || app.phone_number || app.guardian_phone || app.guardianPhone || "";
+      const className = app.class_applying || app.class_applying_for || app.classApplying || app.class_name || app.class || "Not provided";
+      const status = String(app.status || "pending").toLowerCase();
+
+      tr.appendChild(cell(name));
+      const contact = document.createElement("td");
+      const emailDiv = document.createElement("div");
+      emailDiv.textContent = email || "No email";
+      const phoneDiv = document.createElement("div");
+      phoneDiv.textContent = phone || "No phone";
+      contact.append(emailDiv, phoneDiv);
+      tr.appendChild(contact);
+      tr.appendChild(cell(className));
+
+      const statusCell = document.createElement("td");
+      statusCell.appendChild(badge(status));
+      tr.appendChild(statusCell);
+
+      const actionCell = document.createElement("td");
+      const actions = document.createElement("div");
+      actions.className = "actions";
+
+      if (app.id) {
+        if (status !== "approved") {
+          const b = document.createElement("button");
+          b.type = "button"; b.className = "btn btn-success"; b.textContent = "Approve";
+          b.addEventListener("click", () => updateAdmissionStatus(app.id, "approved"));
+          actions.appendChild(b);
+        }
+        if (status !== "rejected") {
+          const b = document.createElement("button");
+          b.type = "button"; b.className = "btn btn-danger"; b.textContent = "Reject";
+          b.addEventListener("click", () => updateAdmissionStatus(app.id, "rejected"));
+          actions.appendChild(b);
+        }
+      } else {
+        actions.textContent = "Missing application ID";
+      }
+
+      actionCell.appendChild(actions);
+      tr.appendChild(actionCell);
+      tbody.appendChild(tr);
+    });
+  } catch (error) {
+    tbody.replaceChildren();
+    const tr = document.createElement("tr");
+    const td = cell("Could not load applications.");
+    td.colSpan = 5;
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+    showMessage("admissionsMessage", explainError(error), "error");
+  }
+}
+
+async function updateAdmissionStatus(id, status) {
+  if (!confirm("Are you sure you want to mark this application as " + status + "?")) return;
+  showMessage("admissionsMessage", "Updating application...", "info");
+  try {
+    const v = await verifyAdministrator();
+    if (!v.allowed) throw new Error(v.message);
+    const { data, error } = await db.from("admission_applications")
+      .update({status}).eq("id", id).select("id,status");
+    if (error) throw error;
+    if (!data?.length) throw new Error("No application was updated. Check database permissions.");
+    showMessage("admissionsMessage", "Application marked as " + status + ".", "success");
+    await loadAdmissions();
+  } catch (error) {
+    showMessage("admissionsMessage", explainError(error), "error");
+  }
+}
+$("refreshAdmissionsButton").addEventListener("click", loadAdmissions);
+
+$("studentForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  clearMessage("studentMessage");
+
+  const admissionNumber = $("studentAdmissionNumber").value.trim();
+  const fullName = $("studentFullName").value.trim();
+  const className = $("studentClass").value;
+  const email = $("studentEmail").value.trim();
+
+  if (!admissionNumber || !fullName || !className) {
+    showMessage("studentMessage", "Enter the admission number, full name, and class.", "error");
+    return;
+  }
+
+  loadingButton("saveStudentButton", true, "Saving student...", "Register Student");
+  try {
+    const v = await verifyAdministrator();
+    if (!v.allowed) throw new Error(v.message);
+
+    const { error } = await db.from("students").insert({
+      admission_number:admissionNumber,
+      full_name:fullName,
+      class_name:className,
+      email:email || null
+    });
+    if (error) throw error;
+
+    showMessage("studentMessage", "Student registered successfully.", "success");
+    $("studentForm").reset();
+    await loadStudents();
+  } catch (error) {
+    showMessage("studentMessage", explainError(error), "error");
+  } finally {
+    loadingButton("saveStudentButton", false, "Saving student...", "Register Student");
+  }
+});
+
+let studentCache = [];
+
+async function fetchStudents() {
+  const { data, error } = await db.from("students")
+    .select("id,admission_number,full_name,class_name,email")
+    .order("full_name", {ascending:true}).limit(1000);
+  if (error) throw error;
+  studentCache = data || [];
+  return studentCache;
+}
+
+async function loadResultStudentOptions() {
+  const select = $("resultStudent");
+  const previous = select.value;
+  select.replaceChildren(new Option("Select student", ""));
+  studentCache.forEach(s => {
+    const label = [s.admission_number, s.full_name, s.class_name].filter(Boolean).join(" — ");
+    select.add(new Option(label, s.id));
+  });
+  if (previous && studentCache.some(s => s.id === previous)) select.value = previous;
+}
+
+async function loadStudents() {
+  clearMessage("studentsMessage");
+  const tbody = $("studentsTableBody");
+  tbody.replaceChildren();
+  try {
+    const v = await verifyAdministrator();
+    if (!v.allowed) throw new Error(v.message);
+    const students = await fetchStudents();
+
+    if (!students.length) {
+      const tr = document.createElement("tr");
+      const td = cell("No student records found.");
+      td.colSpan = 4;
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+    } else {
+      students.forEach(s => {
+        const tr = document.createElement("tr");
+        tr.appendChild(cell(s.admission_number));
+        tr.appendChild(cell(s.full_name));
+        tr.appendChild(cell(s.class_name));
+        tr.appendChild(cell(s.email));
+        tbody.appendChild(tr);
+      });
+    }
+    await loadResultStudentOptions();
+  } catch (error) {
+    const tr = document.createElement("tr");
+    const td = cell("Could not load student records.");
+    td.colSpan = 4;
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+    showMessage("studentsMessage", explainError(error), "error");
+  }
+}
+$("refreshStudentsButton").addEventListener("click", loadStudents);
+
+let subjectCache = [];
+async function loadSubjects() {
+  const select = $("resultSubject");
+  select.replaceChildren(new Option("Loading subjects...", ""));
+  try {
+    const v = await verifyAdministrator();
+    if (!v.allowed) throw new Error(v.message);
+
+    const { data, error } = await db.from("subjects")
+      .select("id,subject_name").order("subject_name", {ascending:true}).limit(500);
+    if (error) throw error;
+    subjectCache = data || [];
+    select.replaceChildren(new Option("Select subject", ""));
+    subjectCache.forEach(s => select.add(new Option(s.subject_name, s.id)));
+
+    if (!subjectCache.length)
+      showMessage("resultFormMessage", "No subjects found. Add subjects in Supabase first.", "info");
+  } catch (error) {
+    select.replaceChildren(new Option("Could not load subjects", ""));
+    showMessage("resultFormMessage", "Subjects: " + explainError(error), "error");
+  }
+}
+
+let sessionCache = [];
+async function loadSessions() {
+  const select = $("resultSession");
+  select.replaceChildren(new Option("Loading sessions...", ""));
+  try {
+    const v = await verifyAdministrator();
+    if (!v.allowed) throw new Error(v.message);
+
+    const { data, error } = await db.from("academic_sessions")
+      .select("id,session_name,is_current")
+      .order("session_name", {ascending:false}).limit(100);
+    if (error) throw error;
+
+    sessionCache = data || [];
+    select.replaceChildren(new Option("Select academic session", ""));
+    sessionCache.forEach(s => select.add(new Option(s.session_name, s.id)));
+
+    const current = sessionCache.find(s => s.is_current === true);
+    if (current) select.value = current.id;
+
+    if (!sessionCache.length)
+      showMessage("resultFormMessage", "No academic sessions found. Add a session in Supabase first.", "info");
+  } catch (error) {
+    select.replaceChildren(new Option("Could not load sessions", ""));
+    showMessage("resultFormMessage", "Academic sessions: " + explainError(error), "error");
+  }
+}
+function resetResultForm() {
+  $("resultForm").reset();
+  $("resultId").value = "";
+  $("testScore").value = "0";
+  $("examScore").value = "0";
+  $("saveResultButton").textContent = "Save Unpublished Result";
+  $("cancelResultEditButton").classList.add("hidden");
+  clearMessage("resultFormMessage");
+}
+$("cancelResultEditButton").addEventListener("click", resetResultForm);
+
+$("resultForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  clearMessage("resultFormMessage");
+
+  const id = $("resultId").value;
+  const studentId = $("resultStudent").value;
+  const subjectId = $("resultSubject").value;
+  const sessionId = $("resultSession").value;
+  const term = $("resultTerm").value;
+  const test = Number($("testScore").value);
+  const exam = Number($("examScore").value);
+
+  if (!studentId || !subjectId || !sessionId || !term) {
+    showMessage("resultFormMessage", "Select a student, subject, academic session, and term.", "error");
+    return;
+  }
+  if (!Number.isFinite(test) || !Number.isFinite(exam) ||
+      test < 0 || test > 100 || exam < 0 || exam > 100) {
+    showMessage("resultFormMessage", "Test and examination scores must each be between 0 and 100.", "error");
+    return;
+  }
+
+  loadingButton("saveResultButton", true, "Saving result...", id ? "Update Result" : "Save Unpublished Result");
+
+  try {
+    const v = await verifyAdministrator();
+    if (!v.allowed) throw new Error(v.message);
+
+    const record = {
+      student_id:studentId,
+      subject_id:subjectId,
+      session_id:sessionId,
+      term:term,
+      test_score:test,
+      exam_score:exam,
+      published:false
+    };
+
+    let response;
+    if (id) {
+      response = await db.from("results").update(record).eq("id", id).select("id");
+    } else {
+      response = await db.from("results").insert(record).select("id");
+    }
+
+    if (response.error) throw response.error;
+    if (!response.data?.length)
+      throw new Error("No result was saved. Check database permissions and RLS policies.");
+
+    showMessage("resultFormMessage",
+      id ? "Result updated and set to unpublished." : "Result saved successfully as unpublished.",
+      "success");
+    resetResultForm();
+    await loadResults();
+  } catch (error) {
+    showMessage("resultFormMessage", explainError(error), "error");
+  } finally {
+    $("saveResultButton").disabled = false;
+    $("saveResultButton").textContent = $("resultId").value ? "Update Result" : "Save Unpublished Result";
+  }
+});
+
+let resultCache = [];
+
+async function loadResults() {
+  clearMessage("resultsMessage");
+  const tbody = $("resultsTableBody");
+  tbody.replaceChildren();
+
+  try {
+    const v = await verifyAdministrator();
+    if (!v.allowed) throw new Error(v.message);
+
+    const { data, error } = await db.from("results")
+      .select("id,student_id,subject_id,session_id,term,test_score,exam_score,published,students(admission_number,full_name,class_name),subjects(subject_name),academic_sessions(session_name)")
+      .order("created_at", {ascending:false}).limit(1000);
+
+    if (error) throw error;
+    resultCache = data || [];
+
+    if (!resultCache.length) {
+      const tr = document.createElement("tr");
+      const td = cell("No results have been entered yet.");
+      td.colSpan = 9;
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return;
+    }
+
+    resultCache.forEach(r => {
+      const tr = document.createElement("tr");
+      const student = r.students || {};
+      const subject = r.subjects || {};
+      const session = r.academic_sessions || {};
+      const test = Number(r.test_score || 0);
+      const exam = Number(r.exam_score || 0);
+
+      tr.appendChild(cell([student.admission_number, student.full_name, student.class_name].filter(Boolean).join(" — ") || "Student record unavailable"));
+      tr.appendChild(cell(subject.subject_name || "Subject unavailable"));
+      tr.appendChild(cell(session.session_name || "Session unavailable"));
+      tr.appendChild(cell(r.term));
+      tr.appendChild(cell(test));
+      tr.appendChild(cell(exam));
+      tr.appendChild(cell(test + exam));
+
+      const statusCell = document.createElement("td");
+      statusCell.appendChild(badge(r.published ? "published" : "unpublished"));
+      tr.appendChild(statusCell);
+
+      const actionsCell = document.createElement("td");
+      const actions = document.createElement("div");
+      actions.className = "actions";
+
+      const edit = document.createElement("button");
+      edit.type = "button";
+      edit.className = "btn btn-secondary";
+      edit.textContent = "Edit";
+      edit.addEventListener("click", () => editResult(r));
+      actions.appendChild(edit);
+
+      const publish = document.createElement("button");
+      publish.type = "button";
+      publish.className = r.published ? "btn btn-secondary" : "btn btn-success";
+      publish.textContent = r.published ? "Unpublish" : "Publish";
+      publish.addEventListener("click", () => changePublishStatus(r.id, !r.published));
+      actions.appendChild(publish);
+
+      actionsCell.appendChild(actions);
+      tr.appendChild(actionsCell);
+      tbody.appendChild(tr);
+    });
+  } catch (error) {
+    const tr = document.createElement("tr");
+    const td = cell("Could not load results.");
+    td.colSpan = 9;
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+    showMessage("resultsMessage", explainError(error), "error");
+  }
+}
+
+function editResult(r) {
+  $("resultId").value = r.id;
+  $("resultStudent").value = r.student_id;
+  $("resultSubject").value = r.subject_id;
+  $("resultSession").value = r.session_id;
+  $("resultTerm").value = r.term;
+  $("testScore").value = r.test_score ?? 0;
+  $("examScore").value = r.exam_score ?? 0;
+  $("saveResultButton").textContent = "Update Result";
+  $("cancelResultEditButton").classList.remove("hidden");
+  showMessage("resultFormMessage", "Editing selected result. Saving changes will set it back to unpublished.", "info");
+  $("resultManagement").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+async function changePublishStatus(id, published) {
+  const action = published ? "publish" : "unpublish";
+  if (!confirm("Are you sure you want to " + action + " this result?")) return;
+
+  showMessage("resultsMessage", "Updating result publication status...", "info");
+  try {
+    const v = await verifyAdministrator();
+    if (!v.allowed) throw new Error(v.message);
+
+    const { data, error } = await db.from("results")
+      .update({published}).eq("id", id).select("id,published");
+
+    if (error) throw error;
+    if (!data?.length) throw new Error("No result was updated. Check database permissions.");
+
+    showMessage("resultsMessage", published ? "Result published." : "Result unpublished.", "success");
+    await loadResults();
+  } catch (error) {
+    showMessage("resultsMessage", explainError(error), "error");
+  }
+}
+$("refreshResultsButton").addEventListener("click", loadResults);
+
+async function checkExistingSession() {
+  try {
+    const { data, error } = await db.auth.getSession();
+    if (error) throw error;
+    if (data?.session) await openDashboard();
+  } catch (error) {
+    showMessage("loginMessage", explainError(error), "error");
+  }
+}
+
+checkExistingSession();
+</script>
+</body>
+</html>
